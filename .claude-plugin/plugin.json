@@ -1,0 +1,19 @@
+{
+  "name": "goat-doodle-notes",
+  "version": "1.0.0",
+  "description": "Doodle Notes · Гар зураас: keeps the phone footage exactly as filmed and adds thin white hand-drawn marker lines that draw themselves on: a circle round the product, a line under the price, arrows, stars and short handwritten Mongolian notes. Renders a 1080x1920 MP4 for Reels/TikTok.",
+  "author": {
+    "name": "GOAT Academy"
+  },
+  "keywords": [
+    "video",
+    "editing",
+    "reels",
+    "tiktok",
+    "doodle",
+    "hand-drawn",
+    "annotation",
+    "mongolian",
+    "ffmpeg"
+  ]
+}

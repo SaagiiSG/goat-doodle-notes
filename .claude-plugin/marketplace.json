@@ -1,0 +1,13 @@
+{
+  "name": "goat-doodle-notes",
+  "owner": {
+    "name": "GOAT Academy"
+  },
+  "plugins": [
+    {
+      "name": "goat-doodle-notes",
+      "source": "./",
+      "description": "Doodle Notes · Гар зураас: hand-drawn doodle-note look for Reels/TikTok. Mongolian-first."
+    }
+  ]
+}
