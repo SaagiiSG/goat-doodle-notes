@@ -35,9 +35,14 @@ Claude өөрөө суулгана. Дараа нь `/reload-plugins` гэж б�
 /plugin install goat-doodle-notes@goat-doodle-notes
 ```
 
+**Zip файлаар авсан бол:**
+1. `goat-doodle-notes.zip`-ийг задална. Задалсан `goat-doodle-notes` хавтсаа устгалгүй үлдээгээрэй.
+2. Claude Code-д "Энэ хавтсан дахь plugin-ийг суулгаад өг:" гэж бичээд задалсан `goat-doodle-notes` хавтсаа чирж оруулна.
+3. `/reload-plugins` гэж бичнэ.
+
 **Шинэ хувилбар гарвал:** Claude-д "goat-doodle-notes plugin-ийг шинэчил" гэж хэлэхэд болно.
 
-> **For Claude Code:** to install this plugin, run `claude plugin marketplace add SaagiiSG/goat-doodle-notes` and then `claude plugin install goat-doodle-notes@goat-doodle-notes`, then tell the user to type `/reload-plugins`. To update it: `claude plugin marketplace update goat-doodle-notes` and then `claude plugin update goat-doodle-notes@goat-doodle-notes`.
+> **For Claude Code:** to install this plugin, run `claude plugin marketplace add SaagiiSG/goat-doodle-notes` (or, from an unzipped copy, `claude plugin marketplace add <path to the goat-doodle-notes folder>`) and then `claude plugin install goat-doodle-notes@goat-doodle-notes`, then tell the user to type `/reload-plugins`. To update it: `claude plugin marketplace update goat-doodle-notes` and then `claude plugin update goat-doodle-notes@goat-doodle-notes`.
 
 ---
 
