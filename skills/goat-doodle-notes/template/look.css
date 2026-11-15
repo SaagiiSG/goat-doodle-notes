@@ -1,0 +1,23 @@
+@font-face { font-family: "Caveat"; src: url("fonts/Caveat%5Bwght%5D.ttf"); font-weight: 400 700; }
+@font-face { font-family: "Shantell Sans"; src: url("fonts/ShantellSans%5BBNCE,INFM,SPAC,wght%5D.ttf"); font-weight: 300 800; }
+
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+#root { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+#bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* Marker strokes (preview: 9 px; 16 px reads on a phone). Three boiled copies of each, one shown per 0.1 s. */
+#ink { position: absolute; inset: 0; width: 1080px; height: 1920px; overflow: visible; }
+#ink path { fill: none; stroke: currentColor; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
+#ink:not([data-v="0"]) .v0, #ink:not([data-v="1"]) .v1, #ink:not([data-v="2"]) .v2 { display: none; }
+
+.white { color: #fff; }
+.black { color: #111; }
+/* white ink gets a soft shadow so it holds on mid-tones; black ink a faint light edge on busy bright spots */
+#ink .white { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)); }
+#ink .black { filter: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.25)); }
+
+#texts > div { position: absolute; white-space: nowrap; }
+.note { left: 0; top: 0; text-align: center; font: 700 120px/1.02 "Caveat", cursive; }
+.line { left: 120px; font: 700 84px/1.12 "Shantell Sans", cursive; }
+.white.note, .white.line { text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
+.w { display: inline-block; }
