@@ -2,7 +2,7 @@
 
 <p align="center"><img src="assets/poster.jpg" width="300" alt="Doodle Notes · Гар зураас"></p>
 
-**Claude Code дотор ажилладаг видео эдитийн skill.** Бичлэг тэр хэвээрээ үлдэнэ. Дээр нь бүдүүн цагаан эсвэл хар маркерын зураас өөрөө зурагдана: бараан дээр дугуй, үнийн доор зураас, сум, од, үг үгээрээ бичигдэх богино гар бичмэл.
+**Claude Code дотор ажилладаг видео эдитийн skill.** Бичлэг тэр хэвээрээ үлдэнэ. Дээр нь бүдүүн цагаан эсвэл хар маркерын зураас өөрөө зурагдана: бараан дээр дугуй, үнийн доор зураас, сум, од, үг үгээрээ бичигдэх богино гар бичмэл. Ярьж буй үг нь энгийн цагаан хадмал болж гарна. Гол санааг онцлох үед дэлгэц бүхэлдээ шугамтай цаас болж, маркер түүн дээр бичнэ: жагсаалтыг чагтална, нэг том үгийг дугуйлна, өмнө ба дараа, эсвэл хамгийн чухал өгүүлбэр. Тэгээд цаас гулсаж гараад бичлэг буцаж гарна.
 
 Reels, TikTok-д бэлэн 1080×1920 MP4 гаргана. GOAT Academy-гийн 14 эдитийн стилийн нэг.
 
@@ -10,7 +10,7 @@ Reels, TikTok-д бэлэн 1080×1920 MP4 гаргана. GOAT Academy-гийн
 
 ## Юунд тохирох вэ?
 
-- **Тохирно:** бараа, үнэ, "энийг хараарай" гэж зааж харуулах бүх зүйл: дэлгүүр, машин, үл хөдлөх, хумс, коучинг
+- **Тохирно:** бараа, үнэ, "энийг хараарай" гэж зааж харуулах бүх зүйл: дэлгүүр, машин, үл хөдлөх, хумс, коучинг. Камер руу ярьсан бичлэг ч, дуугүй бичлэг ч болно.
 - **Тохирохгүй:** аль хэдийн их бичигтэй бичлэг
 
 ---
@@ -19,9 +19,9 @@ Reels, TikTok-д бэлэн 1080×1920 MP4 гаргана. GOAT Academy-гийн
 
 - **Claude Code** (desktop app эсвэл terminal), Claude Pro / Max эрхтэй
 - **Mac эсвэл Windows**
-- **Node 22+**, **ffmpeg**. Байхгүй бол Claude өөрөө шалгаад, суулгах командыг хэлж өгнө.
+- **Node 22+**, **ffmpeg**, Mac дээр **whisper-cpp** (хадмалд). Байхгүй бол Claude өөрөө шалгаад, суулгах командыг хэлж өгнө.
 - **Компьютер:** Mac эсвэл 64-bit Windows 10/11. Apple чиптэй Mac (M1+) дээр туршсан. Windows дээр одоогоор туршаагүй.
-- Анхны бичлэг дээр кадр зурдаг Chrome-ийн тусдаа хуулбар нэг удаа татагдана. Бүх зүйл таны компьютер дээр ажиллана, юу ч интернэтэд илгээгдэхгүй.
+- Анхны бичлэг дээр ярианы загвар (~1.6 GB) болон кадр зурдаг Chrome-ийн тусдаа хуулбар нэг удаа татагдана. Бүх зүйл таны компьютер дээр ажиллана, юу ч интернэтэд илгээгдэхгүй.
 
 ---
 
@@ -44,9 +44,26 @@ Claude өөрөө суулгана. Дараа нь `/reload-plugins` гэж б�
 2. Claude Code-д "Энэ хавтсан дахь plugin-ийг суулгаад өг:" гэж бичээд задалсан `goat-doodle-notes` хавтсаа чирж оруулна.
 3. `/reload-plugins` гэж бичнэ.
 
-**Шинэ хувилбар гарвал:** Claude-д "goat-doodle-notes plugin-ийг шинэчил" гэж хэлэхэд болно.
+---
 
-> **For Claude Code:** to install this plugin, run `claude plugin marketplace add SaagiiSG/goat-doodle-notes` (or, from an unzipped copy, `claude plugin marketplace add <path to the goat-doodle-notes folder>`) and then `claude plugin install goat-doodle-notes@goat-doodle-notes`, then tell the user to type `/reload-plugins`. To update it: `claude plugin marketplace update goat-doodle-notes` and then `claude plugin update goat-doodle-notes@goat-doodle-notes`.
+## Шинэчлэлт
+
+Автомат шинэчлэлт анхандаа унтраалттай байдаг. Бид таны өмнөөс асааж чадахгүй тул нэг удаа өөрөө асаана:
+1. Claude Code дотор `/plugin` гэж бичнэ.
+2. **Marketplaces** → **goat-doodle-notes** → **Enable auto-update** дээр дарна.
+
+Ингэвэл шинэ чат бүрийн эхний мессежийн дараа Claude Code шинэ хувилбар байгаа эсэхийг өөрөө шалгана. "Plugin updated" гэж гарвал `/reload-plugins` гэж бичнэ.
+
+**Гараар шинэчлэх:** Claude-д "goat-doodle-notes plugin-ийг шинэчил" гэж хэлэхэд болно. Эсвэл terminal дээр энэ 2 мөрийг ээлжлэн бичнэ:
+```
+claude plugin marketplace update goat-doodle-notes
+claude plugin update goat-doodle-notes@goat-doodle-notes
+```
+Дараа нь Claude Code дотор `/reload-plugins` гэж бичих эсвэл Claude Code-оо хаагаад дахин нээнэ.
+
+**Zip файлаас суулгасан бол** plugin өөрөө шинэчлэгдэхгүй. Шинэ хувилбар авахын тулд дээрх GitHub-ийн аргаар суулгаарай.
+
+> **For Claude Code:** to install this plugin, run `claude plugin marketplace add SaagiiSG/goat-doodle-notes` (or, from an unzipped copy, `claude plugin marketplace add <path to the goat-doodle-notes folder>`) and then `claude plugin install goat-doodle-notes@goat-doodle-notes`, then tell the user to type `/reload-plugins`. To update it: run `claude plugin marketplace update goat-doodle-notes` and then `claude plugin update goat-doodle-notes@goat-doodle-notes`, then tell the user to type `/reload-plugins`. Auto-update is off by default; the user turns it on once in `/plugin` → Marketplaces → goat-doodle-notes → Enable auto-update. A copy installed from an unzipped folder never updates by itself; to get updates, install it from GitHub (`SaagiiSG/goat-doodle-notes`) instead.
 
 ---
 
@@ -55,7 +72,7 @@ Claude өөрөө суулгана. Дараа нь `/reload-plugins` гэж б�
 1. Видео бүрд **шинэ хоосон хавтас** үүсгэ.
 2. Claude Code-ийг тэр хавтсанд нээ.
 3. Бичнэ: `/goat-doodle-notes:goat-doodle-notes` эсвэл энгийнээр: **"энэ бичлэг дээр гар зураас нэмээд өг"**
-4. Бичлэгээ чирж оруулаад юуг онцлохоо, тэмдэглэлийн үгээ бичнэ.
+4. Бичлэгээ чирж оруулаад юуг онцлохоо, тэмдэглэлийн үгээ бичнэ. Ярьсан бичлэг бол Claude хадмалын үгийг танд шалгуулна.
 5. Claude юу хийхээ товч хэлнэ. Таалагдвал "ок" гэхэд л болно.
 6. `output/doodle-notes.mp4` бэлэн. Instagram, TikTok руу шууд оруулна.
 
@@ -73,6 +90,7 @@ Claude өөрөө суулгана. Дараа нь `/reload-plugins` гэж б�
 
 - Зураас орох юм бүр дээр утсаа 2–3 секунд хөдөлгөлгүй барь: зураас тухайн газраа үлдэнэ.
 - Онцлох зүйлээ кадрын голд ойр ав.
+- Камер руу ярих бол цээжнээс дээш авна: хадмал эрүүн доор багтана.
 
 ---
 

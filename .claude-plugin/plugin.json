@@ -1,7 +1,7 @@
 {
   "name": "goat-doodle-notes",
-  "version": "2.0.0",
-  "description": "Doodle Notes · Гар зураас: keeps the phone footage exactly as filmed and adds thick white or black hand-drawn marker lines that draw themselves on, placed round the real thing in the frame: a ring round the product, a line under the price, arrows, stars, hearts and short handwritten Mongolian notes written word by word, built on HyperFrames. Renders a 1080x1920 MP4 for Reels/TikTok.",
+  "version": "2.1.0",
+  "description": "Doodle Notes · Гар зураас: keeps the phone footage exactly as filmed and adds thick white or black hand-drawn marker lines that draw themselves on, placed round the real thing in the frame: a ring round the product, a line under the price, arrows, stars, hearts and short handwritten Mongolian notes written word by word, plain captions of what is said, and full-screen paper pages where the marker acts out the point (a ticked list, one big word, a before and after, the line that matters), built on HyperFrames. Renders a 1080x1920 MP4 for Reels/TikTok.",
   "author": {
     "name": "GOAT Academy"
   },
@@ -14,6 +14,7 @@
     "hand-drawn",
     "annotation",
     "mongolian",
+    "captions",
     "ffmpeg",
     "hyperframes"
   ],
