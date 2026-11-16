@@ -1,6 +1,6 @@
 ---
 name: goat-doodle-notes
-description: Doodle Notes · Гар зураас. Keeps the user's phone clips exactly as filmed (colour untouched) and adds thick white or black hand-drawn marker lines that draw themselves on - a ring round the product, a line under the price, arrows, stars, sparkles, hearts and short handwritten Mongolian notes that write on word by word - plain white captions of what is said, and, when the point deserves it, a full-screen sheet of paper where the marker acts it out (a ticked list, one big word, a before and after, the one line that matters). Claude looks at the real frames and places every ring around the real thing. Built on HyperFrames. Renders a 1080x1920 MP4 for Reels/TikTok. Best for coaches and health ("look here"), real estate (arrows to features), auto (circle the wheel or the price), ecommerce (underline the price); safe for nail and hair colour because the footage is never graded. Use whenever the user wants doodles, hand-drawn arrows or circles, "look here" notes on a video, a hand-written page or list in a video, or types /goat-doodle-notes, /гар-зураас, or says "гар зураастай болго", "дугуйлаад сумаар заа", "үнийн доор зураас тат", "draw arrows on my video", "doodle on it", even if they don't name the skill.
+description: "Doodle Notes · Гар зураас. Keeps the user's phone clips as filmed (colour untouched) and adds thick white or black marker lines that draw themselves on: a ring round the product, a line under the price, arrows, stars, sparkles, hearts, short handwritten Mongolian notes, plain white captions, and, when a point deserves it, a full-screen paper sheet where the marker acts it out (a ticked list, one big word, a before and after). Claude places every ring around the real thing in the frames. Built on HyperFrames; renders a 1080x1920 MP4 for Reels/TikTok. Best for coaches, real estate (arrows to features), auto and ecommerce; safe for nail and hair colour (never graded). Use whenever the user wants doodles, hand-drawn arrows or circles, \"look here\" notes on a video, a hand-written page or list in a video, or types /goat-doodle-notes, /гар-зураас, or says \"гар зураастай болго\", \"дугуйлаад сумаар заа\", \"үнийн доор зураас тат\", \"draw arrows on my video\", \"doodle on it\", even if they don't name the skill."
 ---
 
 # Doodle Notes · Гар зураас
@@ -34,6 +34,8 @@ Make `raw/` and `output/` in the current folder. Ask for:
 3. **The words:** short notes of 1–3 words and one key line with the price, phone or offer the user gave. On a talking video, take them from what the speaker says. Never invent a price, phone number or date. Ask.
 
 **What to film** (tell the user before they shoot, if they haven't yet): phone upright, and **hold it still for 2–3 seconds on each thing that gets a drawing**, so the ring stays round it. Leave some plain space (a wall, a table top) where a note can go. Someone talking to the camera: **film from the chest up**, the chin about halfway down the screen (no lower than y 1100 of 1920, a little past the middle), so the captions fit under the chin.
+
+If they speak English, add `"language": "en"` to plan.json, so the transcript comes out in English (Whisper hears Mongolian otherwise).
 
 Then run `goat probe raw/*`. It prints each file's size, length, whether it has sound, whether it is HDR, and `speech` spans (when someone is talking).
 

@@ -433,14 +433,14 @@ export async function prepare(ctx) {
   return { doodles, texts, pages, band, pageArea, draw: DRAW, step: STEP, T };
 }
 
-// Soft on purpose (Saagii: "tone down", then "too much"): a doodle's or text's marker at 0.4 (half the old look's
-// 0.8); a page's paper as its sheet comes in and one short marker as it starts writing at about 30% of v1's
-// levels (1.0 and 0.8). Nothing for what is already there on frame 0, and none within 0.5 s of the last one kept
+// Soft on purpose (Saagii: "tone down", "too much", then 16 Nov "bring the sounds effects down a bit"): a doodle's or
+// text's marker at 0.24, a page's paper as its sheet comes in and one short marker as it starts writing, all at about
+// 30% of v1's levels (0.8, and 1.0 for the paper). Nothing for what is already there on frame 0, and none within 0.5 s of the last one kept
 // or while a marker plays. Members raise them with "sfx": {"volume": …}.
 export function sfx(plan, ctx = {}) {
   const ev = [
-    ...(plan.doodles ?? []).filter((d) => start(d) >= FIRST).map((d) => ({ sound: "marker", at: start(d), dur: DRAW, volume: 0.4 })),
-    ...(plan.texts ?? []).filter((t) => start(t) >= FIRST).map((t) => ({ sound: "marker", at: start(t), dur: writeTime(t), volume: 0.4 })),
+    ...(plan.doodles ?? []).filter((d) => start(d) >= FIRST).map((d) => ({ sound: "marker", at: start(d), dur: DRAW, volume: 0.24 })),
+    ...(plan.texts ?? []).filter((t) => start(t) >= FIRST).map((t) => ({ sound: "marker", at: start(t), dur: writeTime(t), volume: 0.24 })),
     ...schedule(plan, ctx.dur ?? Infinity).pages.filter((p) => !p.at0).flatMap((p) => {
       const w = p.steps[0].at, last = p.steps.at(-1);
       return [{ sound: "paper", at: p.start, volume: 0.3 }, { sound: "marker", at: w, dur: Math.min(0.6, last.at + last.dur - w), volume: 0.24 }];
