@@ -1,11 +1,11 @@
 ---
 name: goat-doodle-notes
-description: "Doodle Notes · Гар зураас. Keeps the user's phone clips as filmed (colour untouched) and adds thick white or black marker lines that draw themselves on: a ring round the product, a line under the price, arrows, stars, sparkles, hearts, short handwritten Mongolian notes, plain white captions, and, when a point deserves it, a full-screen paper sheet where the marker acts it out (a ticked list, one big word, a before and after). Claude places every ring around the real thing in the frames. Built on HyperFrames; renders a 1080x1920 MP4 for Reels/TikTok. Best for coaches, real estate (arrows to features), auto and ecommerce; safe for nail and hair colour (never graded). Use whenever the user wants doodles, hand-drawn arrows or circles, \"look here\" notes on a video, a hand-written page or list in a video, or types /goat-doodle-notes, /гар-зураас, or says \"гар зураастай болго\", \"дугуйлаад сумаар заа\", \"үнийн доор зураас тат\", \"draw arrows on my video\", \"doodle on it\", even if they don't name the skill."
+description: "Doodle Notes · Гар зураас. Keeps phone clips as filmed (colour untouched) and adds thick white or black marker lines that draw themselves on: a ring round the product, a line under the price, arrows, stars, sparkles, hearts, short handwritten Mongolian notes, plain white captions, and, when a point deserves it, a full-screen paper sheet where the marker draws it as it is said (a ticked list, bars, a before and after). Claude places every ring around the real thing in the frames. Built on HyperFrames; renders a 1080x1920 MP4 for Reels/TikTok. Best for coaches, real estate (arrows to features), auto and ecommerce; safe for nail and hair colour (never graded). Use whenever the user wants doodles, hand-drawn arrows or circles, \"look here\" notes on a video, a hand-written page or list in a video, or types /goat-doodle-notes, /гар-зураас, or says \"гар зураастай болго\", \"дугуйлаад сумаар заа\", \"үнийн доор зураас тат\", \"draw arrows on my video\", \"doodle on it\", even if they don't name the skill."
 ---
 
 # Doodle Notes · Гар зураас
 
-The footage stays exactly as filmed. On top, thick marker lines draw themselves on, one stroke at a time: a ring round the product, an arrow, a star, a sparkle or a heart, and a short handwritten note that writes itself on word by word. The key line (price, phone, offer) writes on the same way and gets its own underline. Plain white captions show what is said. When a point deserves the whole screen, the footage gives way to a sheet of ruled paper and the marker acts it out: ticks down a list, one big word ringed, a before and after with an arrow, or the one sentence that matters with its key word underlined; then the paper slides away and the footage is back. The ink wobbles very slightly, like real marker. It is the only GOAT look that never touches the colour and adds nothing but drawn lines and paper.
+The footage stays exactly as filmed. On top, thick marker lines draw themselves on, one stroke at a time: a ring round the product, an arrow, a star, a sparkle or a heart, and a short handwritten note that writes itself on word by word. The key line (price, phone, offer) writes on the same way and gets its own underline. Plain white captions show what is said. When a point deserves the whole screen, the footage gives way to a sheet of ruled paper and the marker draws it while the words are said: ticks down a list as each item is named, bars outlined and hatched as they rise, a pen line reaching each point, one big word ringed, a before and after with an arrow, or the one sentence that matters with its key word underlined; then the paper slides away and the footage is back. A small drawing (a trend arrow, a ring) can also go straight on the footage beside the speaker. The ink wobbles very slightly, like real marker. It is the only GOAT look that never touches the colour and adds nothing but drawn lines and paper.
 
 **Good for:** coaches and health ("look here"), real estate (arrows to the big window, the new kitchen), auto (circle the wheel, underline the price), ecommerce (underline the price), nails and hair colour (the shade is never changed). Talking to the camera or silent footage both work.
 **Not for:** shots where a line would have to cover the face or the product, and fast handheld footage (the lines stay where they are drawn; they don't follow moving things). If that is all the user has, say so and suggest another GOAT look.
@@ -123,7 +123,9 @@ Then add `doodles`, `texts`, `pages` and `look` to plan.json. Times are seconds 
 - **Chest-up shot** (the chin stays above y 1100): set it about 70 px under the lowest the chin goes, or leave the default 1190.
 - **Close-up** (the chin goes below y 1100, so captions under it would leave the safe area): put them above the head instead, about 330–400, and check every frame you pulled: the captions' band (`captionY` ± 40) must stay clear of the top of the hair as the head moves. Tell the user a chest-up shot fits captions better.
 - While a caption shows, **no note, line or doodle may cross the captions' band**: `render` refuses and names the one that does and the caption it meets. Move it, change `captionY`, or turn captions off with `"captions": false`. A key `line` without its own `y` sits just above low captions on its own.
-- While a page is up, the captions turn to the page's dark ink (same font and size, no shadow), and the page writes on the larger side of them, a little smaller when that side is short.
+- While a page is up, the captions move down to the page's own low line (y 1190) in its dark ink (same font and size, no shadow), and the page writes in the whole room above it. They go back to `captionY` when the footage returns.
+
+**pages** are the older way to write a page, and old plans' pages still render the same. For a new video, write `visuals` instead (see "Visuals in Doodle Notes" below): a `checklist`, `big`, `compare` or `quote` on the paper does what a page did, and each part draws as its words are said.
 
 **pages:** when a point deserves the whole screen, the footage gives way to a sheet of warm ruled paper that slides up with a little turn and settles, the marker acts the point out in Caveat at handwriting speed, and the sheet slides away. Use one to act out what the video says or shows, in the speaker's or the user's own words: what's included, a number or word to remember, a before and after, the one line that matters. One or two pages in a video is plenty; never fill one with example text.
 
@@ -165,7 +167,168 @@ Characters count spaces. `start` is when the sheet starts to come in; `end` (def
 
 **Timing:** draw one thing at a time, about 0.3–0.6 s apart: note first, then the arrow, then the ring, then the key line. Two moves sell: a ring round the product and a line under the price. Three to five drawings per shot is plenty. On a talking video, start each drawing or page a moment before the words it shows are said.
 
-Before rendering, tell the user the plan in plain words (each shot, what gets circled or pointed at, the words, each page and what it says, the ink colour, where the captions go) and ask "OK?". This is the only approval needed.
+<!-- visuals -->
+<!-- this section is copied from core/skill-visuals.md by build.py; edit it there -->
+## Motion graphics, drawn while it's said
+
+A visual is a small drawing that acts out what is being said: a ticked list, one big word, bars that rise, a before and after, a chat bubble, a browser with a link being typed. Each part draws itself on as its words are said. You decide what is drawn and when. The look decides the fonts, colours, texture, motion and where it sits on the screen.
+
+### How to pick and sketch
+
+1. Run `cut` first, then read `words.json` in the `.work-…` folder. It is the edited video, with the time of every word.
+2. Mark the moments worth a visual: a number, a list of 2 or more things, a contrast or a change, steps in order, a place, a key claim, a question and its answer, an announcement. Skip filler.
+3. Give each moment one visual at most. Put at most one visual every 6 s or so in a talking video; in a voice-only video, see below (never more than 2 s empty). Put none in the first 0.8 s unless it starts at 0. A visual at 0 is drawn complete on the first frame, which is the thumbnail.
+4. Start from the recipe that fits (table below). When none fits, build one from parts: an icon and two words, a ring around a word, three icons in a row. Keep it to one idea, 6 parts at most, and short words taken from the speech.
+5. Tie each part to its words with `"say"`, so it draws as it is said.
+6. Show a number only when it is said (as digits in the transcript, with `"source": "said"`) or when the user gave it (`"source": "member"`, and quote it back to them when you hand the video over). If nothing was said with numbers, use a `trend` arrow, a before and after, or ticks. Never a chart.
+7. Leave fonts, colours, texture, motion and placement to the look.
+
+| When they say… | Use |
+|---|---|
+| one number that matters (years, clients, a price the user gave) | `count` |
+| one word or claim | `big` |
+| a part of a whole | `ring` |
+| shares of a whole, all given | `ring` with `parts` |
+| 2–6 amounts side by side | `bars` |
+| one amount at 3 or more times | `line` |
+| a change with no numbers ("more clients", "less waiting") | `trend` |
+| a change between two states or two numbers | `compare` |
+| how to do something, in order | `steps` |
+| what you get, what's done | `checklist` |
+| two options on 2–4 points | `table` |
+| dates or stages in order | `timeline` |
+| a place | `pin` |
+| a strong line, a customer's words | `quote` |
+| a question and its answer, a DM | `chat` |
+| an announcement (new, opening, launch) | `news` |
+| a website, an app, a prompt or a comment on a phone or computer | `screen` |
+| a clear picture no recipe fits | parts: icons, arrows, rings and ticks in a row or a column |
+| nothing concrete | no visual (in a voice-only video, keep the one before up) |
+
+**Keep it calm.** One hero per visual (the key value or the takeaway) and everything else quieter. The look's one accent colour marks only that hero. Recipes choose it themselves; in a picture built from parts, put `*stars*` around the key word. A chart carries a `title` with the takeaway in the speaker's own words.
+
+### In plan.json
+
+```json
+"visuals": [
+  {"start": 0.9, "end": 7.6, "recipe": "checklist", "items": [
+    {"text": "Articulation", "say": "articulation"},
+    {"text": "Speaking on demand", "say": "speaking on demand"}]},
+  {"start": 30.5, "end": 37.0, "row": [
+    {"column": [{"icon": "home"}, {"text": "Main feed"}, {"tick": false, "say": "not go on my main feed"}]},
+    {"column": [{"icon": "sparkle"}, {"text": "Trial reel"}, {"tick": true, "say": "trial reel"}]}]}
+]
+```
+
+These use the words of one of our own test clips, and the times only show the shape: take the real ones from `words.json`. The second visual is not a recipe. It is a picture built from parts for that moment.
+
+- **`start` and `end`** are seconds of the edited video. The visual comes in over about 0.5 s from `start` and leaves over about 0.3 s before `end`. An `end` past the video's end keeps it up to the last frame.
+- **`say`** is words copied from `words.json`. Capitals and commas don't matter. Parts are matched in the order they are written, each after the one before. If the words aren't found, the render stops and lists what was said there: copy the right words from that list.
+- **`at`** is seconds, for a part with no words to tie it to (or when whisper-cpp isn't installed and there is no `words.json`). Parts with neither follow the part before them.
+- **One visual at a time,** with at least 1 s of the look between two (in a voice-only video they may follow back to back). Every part must land after the visual is in, and the last one needs 1 s to be read before the visual leaves. The render says what to move when one of these fails.
+
+**Parts:** `text` (1–3 rows split with `\n`; `"style"`: `value`, `title`, `label` or `small`), `number` (kept exactly as written, with its unit), `path` (up to 24 `[x, y]` points in a 0–100 box), `arrow` (right, left, up, down, up-right, down-right), `ring`, `bar`, `tick` (true ✓ or false ✗), `icon` and `image` (a photo in `raw/`). Any part can add `"circle": true`, `"underline": true` or `"frame": true` (the look's panel behind it). Icons: clock, calendar, pin, phone, chat, heart, star, person, people, scissors, car, home, bag, camera, sparkle, money, chip, gear, cursor.
+
+**Layouts:** `"row": […]` side by side, `"column": […]` stacked, `"grid": […]` with `"cols"`, `"stack": […]` (up to 5 images or cards, fanned), and `"axis"` (a baseline with labelled points, `"plot"`: bars, line or dots, and a `"unit"`). At most 6 things in a group, 24 parts and 40 words in a visual.
+
+**Recipes:**
+
+| Recipe | Fields |
+|---|---|
+| `count` | `number`, `line?` |
+| `big` | `text`, `line?` |
+| `bars` | `bars: [{label, value, say?}]` (2–6), `unit`, `title?` |
+| `line` | `points: [{label, value, say?}]` (3–6), `unit`, `title?` |
+| `ring` | `value`, `of?`, `unit`, `label?`, or `parts: [{label, value, say?}]` (2–4) and `unit` |
+| `steps` | `items: [{text, say?}]` (2–4) |
+| `checklist` | `items: [{text, tick?, say?}]` (2–4) |
+| `compare` | `before`, `after` (a text or a number, or `{"text": …, "say": …}`) |
+| `trend` | `dir: "up"` or `"down"`, `text` (no digits) |
+| `quote` | `text` (1–3 rows), `who?` |
+| `timeline` | `points: [{when, what, say?}]` (2–5) |
+| `table` | `head: [a, b]`, `rows: [{label, cells: [x, y], say?}]` (2–4); a cell is text, a number, or true/false for a tick |
+| `pin` | `place`, `line?` (the map is a drawing, never a real map) |
+| `chat` | `message`, `reply?`, `name?` |
+| `news` | `headline`, `badge?`, `line?` |
+| `screen` | `kind: "browser"`, `"app"` or `"comment"`, `field` (typed in), `button?` (a cursor presses it), `result?` (text, or `{"image": "raw/…"}`) |
+
+### Numbers: only true ones
+
+- Every word, number, date and place on screen comes from what is said or from the user. Never invent a price, a phone number, a date or a figure, not even as an example. If one is missing, ask.
+- Any visual with a digit in it needs `"source"`:
+  - `"said"`: the number is in the speech. It must be in `words.json` as digits, between 5 s before the visual and its end. When you fix the transcript, write the numbers that are said as digits, so the captions show them too. If one is missing, the render stops and says where it looked.
+  - `"member"`: the user typed it in the chat. Quote it back to them when you hand the video over.
+  - `"test"`: only for our own tests. It shows a TEST DATA tag. Never use it in the user's video.
+- Charts are only bars, a line or a ring. Each has a `unit`. Bars start at 0. There is no scale and no legend: each value is written on its mark. A line has 3 to 6 points. A ring needs `of` (the whole), unless the unit is `"%"`. No chart without real values: when nothing was said with numbers, show it another way.
+- A number shows exactly as written, with its separators, decimals and unit. A count-up ends on that exact text.
+
+This is how our own graph tests look, with true counts from the GOAT Academy files (fonts per look), so it carries the TEST DATA tag:
+
+```json
+{"start": 2, "end": 8, "source": "test", "recipe": "bars", "unit": "fonts", "title": "Fonts per look",
+ "bars": [{"label": "Hype Cut", "value": 1}, {"label": "Glass Ribbon", "value": 2}, {"label": "Fluted Studio", "value": 3}]}
+```
+
+### Voice-only videos
+
+A plan with a `"voiceover"` and no clip with its own speech (no clips, or only photos and silent clips) is a voice-only video. The look draws its own background, and the visuals carry the video.
+
+- **The user brings the voice:** an ElevenLabs file or their own recording, copied into `raw/`. These skills never make a voice.
+- **A voice-only video always needs `transcribe` (whisper-cpp):** its captions come from it, and `cut` stops without it. This holds in every look. Where step 2 says to skip `transcribe` when whisper-cpp isn't installed, that's only for clips with their own speech. Here, help the user install whisper-cpp first.
+- **For Mongolian, ask for the script too,** and put it in `"script"` (a `.txt` file in `raw/`, or the text itself). The words then come from the script exactly, and Whisper only times them. `transcribe` still writes them to `transcript.json`, where the user can fix a word.
+  - "the script doesn't match the voice (N% of its letters found)" means the two don't go together: the wrong file, a script from another draft, or a script for only part of the voice. Ask the user for the whole script the voice reads.
+  - A very long script (over 6000 letters) is refused: split the voice into parts under 4 minutes, each with its own script.
+- There's no pause cut: the voice file is already finished.
+- The video lasts as long as the voice, plus a 0.6 s hold at the end. Captions are always on.
+- **Photos or clips under the voice** must run at least the voice plus 0.6 s in all (give each photo a `"dur"`), or `prep` stops and says how long they need to be. Footage past that is cut off.
+- **The first visual starts at 0,** and the screen is never empty for more than 2 s. Visuals may follow each other back to back. To close a gap, add a visual or keep the one before it up longer.
+- Anything shown on a phone or a computer (a website, an app, a prompt being typed, a comment) is a `screen`.
+
+Your look's own section below says where its visuals sit, which options it takes, any recipe it refuses, and gives an example.
+<!-- /visuals -->
+
+## Visuals in Doodle Notes
+
+Every visual is drawn in this look's marker, stroke by stroke as its words are said: words in Caveat handwriting (`small` in Shantell Sans), each row written on at the pen's pace; ticks and rings as on the pages; bars outlined and hatched as they rise; a small hand-drawn axis (a baseline and a short stroke up, no scale, the values written above the bars and the labels under them); a line drawn to each point as it is said, with a dot and its value written there; arrows, icons and panels drawn as marker lines. Numbers are written, never counted up. The strokes wobble slightly, like the doodles.
+
+**Where a visual sits:**
+- **On a paper page** (the default). The footage gives way to a sheet of ruled paper that slides up and settles, the visual is drawn on it, and the sheet slides away. It draws in the room above the page's low caption line (y 270–1120). Two visuals on paper back to back (the next `start` is the last one's `end`) slide paper over paper, without the footage coming back.
+- **Over the footage:** add `"place": "footage", "box": [left, top, right, bottom]`, the box in pixels of the 1080x1920 frame, inside x 120–960, y 270–1248, at least 300 px wide and 240 px tall. Use it for a small drawing next to the speaker, like a trend arrow beside the head. Pull frames at the visual's start, middle and end (as for the doodles) and put the box on a plain part of the frame, clear of the face. The ink is `look.color`. The render looks for the head on those 3 stills and refuses a box within 24 px of it, and it refuses a box within 60 px of the captions (`captionY` ± 40) while a caption shows. A `pin`'s `place` is its place's name, so a pin over the footage takes just the `"box"`.
+- Only paper goes over paper exactly. A visual over the footage can't follow another visual exactly (on paper or over the footage), and nothing can follow one exactly: leave 1 s of footage between them.
+
+**How this look draws the recipes:**
+- `checklist`: each item is written as it is said, then ticked. An item without `say` waits for the one before it, so the pen writes one row at a time. On a page, an item too long for one row at the list's full size (128 px) is written on two.
+- `trend` over the footage in a wide, low box (below the captions, say): the arrow rises beside its words, which sit at its tip.
+- Words in one column (a list's items, a table's names) write at one size, the smallest that fits them all.
+- `compare` runs down the page: before, an arrow down, then after, underlined. Put the `say` on `after`; the arrow draws on those words, and then the after is written.
+- `big`: a word of 5 letters or fewer is ringed, a longer one underlined twice. A `count` is ringed.
+- Words between `*stars*` are underlined as they are written (a `quote`'s key word).
+- No `image` parts: this look draws only lines, words and paper, so a photo is refused. Every other recipe and part works.
+- No doodle, note or line may be drawing on while a visual on paper is up (as with pages). Ones drawn before it hide under the paper and come back after it.
+
+**Old plans still work.** `pages` render as before, each as a visual on its own sheet, at the same times. Pages and visuals share one timeline: one at a time, with 1 s of footage between them, or paper over paper exactly at an end.
+
+**A voice-over with no clip that has its own speech** (no clips, or only photos, silent clips and clips with `"sound": false`): the voice is the speech. Captions are always on and nothing is pause-cut.
+- **No clips at all:** the paper fills the frame for the whole video and every visual is drawn on it, back to back. The first visual starts at 0, and the paper is never empty for more than 2 s. There are no `place`, `doodles`, `texts` or `pages`. The captions sit on the page's low line (y 1190) in its ink, and `captionY` is not used.
+- **Silent clips or photos under the voice** (an ElevenLabs voice over B-roll): your footage stays the picture, with the voice and the drawings over it, as in any Doodle video. Doodles, notes, lines, pages and visuals on the paper or over the footage all work, with the usual 1 s of footage between visuals (or paper over paper).
+
+**Sound:** a soft paper sound as each sheet comes in, and a short marker scratch (at most 0.6 s) as each part draws. Nothing paper-like for a visual over the footage.
+
+An example from one of our own test clips (the times only show the shape; take the real ones from `words.json`):
+
+```json
+"visuals": [
+  {"start": 4.3, "end": 9.4, "recipe": "checklist", "items": [
+    {"text": "Articulation", "say": "articulation"},
+    {"text": "Speaking on demand", "say": "speaking on demand"}]},
+  {"start": 10.6, "end": 15.5, "recipe": "trend", "dir": "up", "text": "More natural", "say": "more natural on camera",
+   "place": "footage", "box": [600, 300, 960, 760]},
+  {"start": 20.4, "end": 26.9, "recipe": "compare", "before": "Stuttering\nand pausing",
+   "after": {"text": "Trying to improve", "say": "trying to improve"}}
+]
+```
+
+Before rendering, tell the user the plan in plain words (each shot, what gets circled or pointed at, the words, each page and visual and what it shows, the ink colour, where the captions go) and ask "OK?". This is the only approval needed.
 
 <!-- audio: this section is copied from core/skill-audio-node.md by build.py; edit it there -->
 ## Sound effects, voice-over and music

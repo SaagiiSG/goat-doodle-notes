@@ -4,6 +4,7 @@
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 import { resolve, basename, extname, dirname, join } from "node:path";
+import { soundless, voiceMode } from "./voice.mjs";
 
 export const W = 1080, H = 1920, FPS = 30;
 // Inside this box nothing is covered by Reels/TikTok buttons (Meta + TikTok guides combined).
@@ -146,15 +147,40 @@ async function clipChain(c, [w, h], look, ctx, index, pad = 0) {
   return { args, vf };
 }
 
-const VIDEO_OUT = ["-an", "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
+const H264 = ["-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
   "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709"];
+const VIDEO_OUT = ["-an", ...H264];
+
+// The voice-over as the video's sound (input i), at its "volume", from its "at", for t seconds.
+const voiceChain = (vo, i, t) => {
+  const ms = Math.round(Number(vo.at ?? 0) * 1000);
+  return `[${i}:a]aresample=48000,aformat=channel_layouts=stereo,volume=${Number(vo.volume ?? 1)},adelay=${ms}|${ms},apad,` +
+    `atrim=0:${t}[a]`;
+};
 
 // Trim, cover-crop to the look's FIT (default 1080x1920) at each clip's cx/cy, 30 fps, join. Photos and
 // clips without sound (or with "sound": false) get silence, so the joined file always has a stereo track.
 // A look may also set EXTRA / PER_CLIP (more files in <work>/media/).
+// A voice-only video (a voice-over and no clip with sound: voice.mjs) has the voice as its sound and lasts the voice
+// plus the hold; with no clips, its picture is the look's BLANK colour (black when it has none).
 export async function prep(plan, planDir, outPath, look = {}) {
-  const ctx = { plan, planDir, run };
-  if (!plan.clips?.length && look.BLANK) {
+  const ctx = { plan, planDir, run }, work = dirname(outPath);
+  const clips = plan.clips?.length ? await checkClips(plan, planDir, work) : [];
+  const vo = plan.voiceover && (typeof plan.voiceover === "object" ? plan.voiceover : { src: plan.voiceover });
+  let voice = null; // the voice-only video's length, and the voice's end
+  if (vo && voiceMode(plan, clips)) {
+    const { PACE } = await import("./visual-time.mjs"); // here, not at the top: visual-time.mjs imports this file
+    const ends = Number(vo.at ?? 0) + (await probe(resolve(planDir, vo.src))).dur;
+    voice = { ends, total: frames(ends + (look.SKIN?.pace?.hold ?? PACE.hold)) };
+  }
+  if (voice && !clips.length) {
+    const T = voice.total.toFixed(3), color = look.BLANK ? look.BLANK(plan).color : "#000000";
+    await ffmpeg(["-f", "lavfi", "-i", `color=c=${color}:s=${W}x${H}:r=${FPS}:d=${T}`, "-i", resolve(planDir, vo.src),
+      "-filter_complex", voiceChain(vo, 1, T), "-map", "0:v", "-map", "[a]", "-t", T, ...H264,
+      "-c:a", "aac", "-b:a", "256k", outPath], "make the voice-only video");
+    return { dur: voice.total, cuts: [0], silent: [], clips: [], voice: true };
+  }
+  if (!clips.length && look.BLANK) {
     const { dur, color } = look.BLANK(plan);
     await ffmpeg(["-f", "lavfi", "-i", `color=c=${color}:s=${W}x${H}:r=${FPS}:d=${dur}`,
       "-f", "lavfi", "-i", `anullsrc=r=48000:cl=stereo`, "-t", String(dur), "-c:v", "libx264", "-preset", "medium",
@@ -162,8 +188,12 @@ export async function prep(plan, planDir, outPath, look = {}) {
       "-c:a", "aac", "-b:a", "256k", outPath], "make the blank video");
     return { dur: frames(dur), cuts: [0], silent: [[0, frames(dur)]], clips: [] };
   }
-  const work = dirname(outPath);
-  const clips = await checkClips(plan, planDir, work);
+  if (!clips.length) throw new Error("the plan has no clips");
+  const length = frames(clips.reduce((s, c) => s + c.dur, 0));
+  if (voice && length < voice.total - 1e-6)
+    throw new Error(`the clips run ${length.toFixed(1)} s but the voice runs ${voice.ends.toFixed(1)} s: lengthen the clips ` +
+      `(a photo's "dur") or add more, to ${voice.total.toFixed(1)} s or more in all`);
+  const total = voice ? voice.total : length;
   const fit = (typeof look.FIT === "function" ? look.FIT(plan) : look.FIT ?? [W, H]).map(even);
   const args = [], fl = [];
   for (const [i, c] of clips.entries()) {
@@ -172,26 +202,27 @@ export async function prep(plan, planDir, outPath, look = {}) {
     args.push(...k.args);
     fl.push(`[${i}:v]${k.vf}[v${i}]`);
     // 10 ms fades so a join cut mid-waveform doesn't click (as applyCut does)
-    fl.push(c.info.audio && !c.info.still && c.sound !== false
+    if (!voice) fl.push(!soundless(c)
       ? `[${i}:a]aresample=48000,aformat=channel_layouts=stereo,apad,atrim=0:${t},asetpts=PTS-STARTPTS,` +
         `afade=t=in:d=0.01,afade=t=out:st=${(c.dur - 0.01).toFixed(3)}:d=0.01[a${i}]`
       : `anullsrc=r=48000:cl=stereo,atrim=0:${t}[a${i}]`);
   }
-  fl.push(clips.map((_, i) => `[v${i}][a${i}]`).join("") + `concat=n=${clips.length}:v=1:a=1[v][a]`);
-  await ffmpeg([...args, "-filter_complex", fl.join(";"), "-map", "[v]", "-map", "[a]",
-    "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
-    "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
+  if (voice) {
+    args.push("-i", resolve(planDir, vo.src));
+    fl.push(clips.map((_, i) => `[v${i}]`).join("") + `concat=n=${clips.length}:v=1:a=0[v]`, voiceChain(vo, clips.length, total.toFixed(3)));
+  } else fl.push(clips.map((_, i) => `[v${i}][a${i}]`).join("") + `concat=n=${clips.length}:v=1:a=1[v][a]`);
+  await ffmpeg([...args, "-filter_complex", fl.join(";"), "-map", "[v]", "-map", "[a]", ...(voice ? ["-t", total.toFixed(3)] : []), ...H264,
     "-c:a", "aac", "-b:a", "256k", outPath], "join the clips");
   const cuts = [], silent = [], out = [];
   let acc = 0;
   for (const c of clips) {
+    if (frames(acc) >= total - 1e-6) break; // past a voice-only video's end
     cuts.push(frames(acc));
     out.push({ start: frames(acc), dur: c.dur, still: c.info.still });
     // photos and clips without sound carry no speech: the pause cut keeps them whole
-    if (c.info.still || !c.info.audio || c.sound === false) silent.push([frames(acc), frames(acc + c.dur)]);
+    if (soundless(c)) silent.push([frames(acc), frames(acc + c.dur)]);
     acc += c.dur;
   }
-  const total = frames(acc);
 
   // video-only side files: hold = pad with the last frame up to the main video's length
   const media = join(work, "media");
@@ -205,7 +236,7 @@ export async function prep(plan, planDir, outPath, look = {}) {
     await side(x.name, c, x.fit.map(even), x.hold, 0);
   }
   if (look.PER_CLIP) for (const [i, c] of clips.entries()) await side(`clip-${i}`, c, fit, true, i);
-  return { dur: total, cuts, silent, clips: out };
+  return { dur: total, cuts, silent, clips: out, ...(voice && { voice: true }) };
 }
 
 // One frame per second, 270 px wide, 6 per row: a quick look at a whole render.

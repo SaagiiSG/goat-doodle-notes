@@ -1,9 +1,10 @@
 // The person cut-out, for looks that put things behind or under the speaker (goat-word-behind, goat-glass-ribbon):
 // make or reuse hf/subject.webm (the sharp MODNet cut-out in matte.mjs, or HyperFrames' remove-background if that
-// fails), and find the head in it.
-import { existsSync, statSync, renameSync, rmSync } from "node:fs";
+// fails), and find the head in it. Looks without a cut-out find the head on stills (headsAt).
+import { existsSync, statSync, renameSync, rmSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { modnetCutOut } from "./matte.mjs";
+import { modnetCutOut, stillMatte, MW, MH } from "./matte.mjs";
+import { ffmpeg } from "./media.mjs";
 
 // Make hf/subject.webm from cut.mp4, or reuse it while it is newer than cut.mp4. Returns its path.
 export async function cutOut({ work, hfDir, hf, matte = modnetCutOut }) {
@@ -79,6 +80,34 @@ export async function headAt(run, webm, t) {
     return null;
   }
   return headFromMask(r.stdout, 108, 192);
+}
+
+// The heads on stills of cut.mp4 at `times` (seconds), for overlay looks without a cut-out: each still through MODNet's
+// matte, on one session (give every visual's times in one call: the model loads once). null, with one warning, when
+// the matte can't run (offline on first use): the overlays then go unchecked, and SKILL.md has Claude look at a frame.
+// Boxes are in cut.mp4's frame scaled to 1080x1920: a look whose footage sits smaller (FIT) maps them onto its stage.
+export async function headsAt({ work, hf, dur }, times, { matte } = {}) {
+  const still = join(work, "still.rgb");
+  let own;
+  try {
+    matte ??= own = await stillMatte(hf);
+    const heads = [];
+    for (const t of times) {
+      const at = Math.max(0, Math.min(t, dur - 0.05)); // the last frame starts 1/30 s before the end: a still at the end is empty
+      await ffmpeg(["-ss", at.toFixed(3), "-i", join(work, "cut.mp4"), "-frames:v", "1", "-vf", `scale=${MW}:${MH}:flags=bicubic`,
+        "-f", "rawvideo", "-pix_fmt", "rgb24", still], `take a still at ${at.toFixed(2)} s`);
+      const rgb = readFileSync(still);
+      if (rgb.length < MW * MH * 3) throw new Error(`cut.mp4 has no frame at ${at.toFixed(2)} s`);
+      heads.push(headFromMask(await matte(rgb), MW, MH));
+    }
+    return heads;
+  } catch (e) {
+    console.warn(`[goat] note: the head could not be found on stills (${String(e.message).replace(/\s+/g, " ").trim().slice(-300)}), ` +
+      'so the visuals are not checked against the face. Look at a frame of each, and give any that covers the face "area": "bottom".');
+    return null;
+  } finally {
+    await own?.release();
+  }
 }
 
 // A note when heads were sampled but none is usable (nobody found, or only shapes the look doesn't trust): `what`

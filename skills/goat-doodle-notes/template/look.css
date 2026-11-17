@@ -4,7 +4,7 @@
 html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #000; }
 #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
 #bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-#art, #marks, #pages, #caps { position: absolute; inset: 0; }
+#art, #marks, #visuals, #pages, #caps { position: absolute; inset: 0; }
 
 /* Marker strokes (preview: 9 px; 16 px reads on a phone). Three boiled copies of each, one shown per 0.1 s. */
 .pen { position: absolute; inset: 0; width: 1080px; height: 1920px; overflow: visible; }
@@ -36,16 +36,39 @@ html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; backgro
     repeating-linear-gradient(180deg, transparent 0, transparent 73px, rgba(80, 120, 175, 0.2) 73px, rgba(80, 120, 175, 0.2) 75px, transparent 75px, transparent 76px);
   box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.32), 0 30px 70px rgba(0, 0, 0, 0.32);
 }
+.sheet.base { visibility: visible; box-shadow: none; } /* a voice-only video's paper, all along */
 .hand { position: absolute; left: 60px; top: 70px; width: 1080px; height: 1920px; color: #1b1a1f; }
-.txt { position: absolute; inset: 0; }
+
+/* Visuals, in the same marker: the paper's ink (#1B1A1F on #F6F0E2, 15:1) in Caveat 700 and Shantell Sans 600, 16 px
+   strokes. Over the footage the look's ink, white with a soft shadow or black with a faint light edge, as the doodles. */
+.v { font-family: "Caveat", cursive; font-weight: 700; color: #1b1a1f; }
+.v path { stroke-width: 16px; }
+.v-small, .v-test { font-family: "Shantell Sans", cursive; font-weight: 600; }
+.v-test { letter-spacing: 0.08em; opacity: 0.6; }
+.v-text em { font-style: normal; } /* the key words get an underline, drawn in Node */
+.v-bar path { stroke-width: 12px; }
+.v-bar path + path { stroke-width: 7px; } /* the hatch: a finer pen, 22 px apart across the strokes */
+.v-axis path, .v-frame path { stroke-width: 10px; }
+.v-map { opacity: 0.35; }
+.v-map path { stroke-width: 6px; }
+.v-ring .v-track { stroke-opacity: 0.14; } /* the whole it fills toward: faint (the core fades the path itself in) */
+.v-cursor path { fill: #f6f0e2; stroke-width: 8px; }
+.v-chrome i { background: none; border: 4px solid currentColor; box-sizing: border-box; }
+#visuals.white .v { color: #fff; }
+#visuals.black .v { color: #111; }
+#visuals.white .v-text { text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
+#visuals.white .v svg { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)); }
+#visuals.black .v svg { filter: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.25)); }
+#visuals.white .v-cursor path { fill: #fff; }
 /* the marker's slight tremor, in step with the strokes' boil */
-#art[data-v="1"] .txt { translate: 1.2px -1px; }
-#art[data-v="2"] .txt { translate: -1px 1.2px; }
-/* A row writes itself on behind a mask with a 0.3 em soft edge (the pen's nib) that sweeps left to right as --p goes 0 → 100. The padding keeps
-   Caveat's overhanging strokes (у, з) inside the mask; line-height 1.26 is the font's own ascent + descent. */
-.row {
-  position: absolute; left: 0; top: 0; white-space: nowrap; padding: 0 0.14em; --p: 0;
-  font: 700 104px/1.26 "Caveat", cursive;
+#art[data-v="1"] .v-text { translate: 1.2px -1px; }
+#art[data-v="2"] .v-text { translate: -1px 1.2px; }
+/* A row writes itself on behind a mask with a 0.3 em soft edge (the pen's nib) that sweeps left to right as --p goes
+   0 → 100 (look.js), in place of the core's hard wipe. The padding keeps Caveat's overhanging strokes (у, з) inside
+   the mask, and the margin takes it back out of the layout. */
+.v-text > div { clip-path: none !important; }
+.v-write > div {
+  --p: 0; padding: 0 0.14em; margin: 0 -0.14em;
   -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--p) * (100% + 0.3em) / 100 - 0.3em), transparent calc(var(--p) * (100% + 0.3em) / 100));
   mask-image: linear-gradient(90deg, #000 calc(var(--p) * (100% + 0.3em) / 100 - 0.3em), transparent calc(var(--p) * (100% + 0.3em) / 100));
 }

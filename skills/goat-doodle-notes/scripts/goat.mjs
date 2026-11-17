@@ -7,10 +7,11 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, statS
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { die, run, probe, speech, prep, sheet } from "./media.mjs";
-import { transcribe, groupCaptions, silenceKeeps, retime, applyCut, parseTranscript } from "./words.mjs";
+import { transcribe, dtwTranscribe, dtwTimes, groupCaptions, silenceKeeps, retime, applyCut, parseTranscript } from "./words.mjs";
 import { mixSound, checkEvents, loudness } from "./sound.mjs";
 import { buildProject, renderProject, mux, checkFirstFrame } from "./render.mjs";
 import { hf } from "./hf.mjs";
+import { readScript, alignScript } from "./voice.mjs";
 
 const SCRIPTS = dirname(fileURLToPath(import.meta.url));
 const SKILL_DIR = resolve(SCRIPTS, "..");
@@ -47,19 +48,32 @@ async function main() {
   const main = join(work, "main.mp4"), cut = join(work, "cut.mp4");
   const transcript = join(work, "transcript.json"), wordsFile = join(work, "words.json");
   const prepFile = join(work, "prep.json"), keepsFile = join(work, "keeps.json"), cutsFile = join(work, "cuts.json");
+  // a voice-only video (prep says so): the voice-over is the speech, with captions in every look and no pause cut
+  const voice = cmd !== "prep" && existsSync(prepFile) && readJson(prepFile).voice === true;
 
   if (cmd === "prep") {
     const r = await prep(plan, planDir, main, look);
     writeJson(prepFile, r);
-    console.log(`[goat] joined ${r.cuts.length} clip(s), ${sec(r.dur)} -> ${main}`);
+    console.log(r.voice ? `[goat] a voice-only video: the voice-over is the speech, ${sec(r.dur)} -> ${main}`
+      : `[goat] joined ${r.cuts.length} clip(s), ${sec(r.dur)} -> ${main}`);
     return;
   }
 
   if (cmd === "transcribe") {
-    if (!look.TALKS) return console.log(`[goat] ${look.NAME} has no captions, so there is nothing to transcribe.`);
-    const words = await transcribe(need(main, "prep plan.json"), work, plan.language ?? "mn");
+    need(main, "prep plan.json");
+    const language = plan.language ?? "mn", script = readScript(plan, planDir);
+    // With a script the words come from it and only their times from Whisper: the DTW run's own words, which carry
+    // them. HyperFrames' run (kept without a script, for its spelling) can repeat a sentence the DTW run heard once, and
+    // the copy gets squeezed into a blink that the script would follow (the Mongolian test voice, 16 Nov).
+    const heard = !script ? await transcribe(main, work, language)
+      : await dtwTranscribe(main, work, language).then(async (d) => dtwTimes(d, d, await speech(main))).catch((e) => {
+        console.warn(`[goat] timing the script by HyperFrames' words instead: ${e.message}`);
+        return transcribe(main, work, language);
+      });
+    const words = script ? alignScript(script, heard) : heard;
     writeJson(transcript, words);
-    console.log(`[goat] ${words.length} words -> ${transcript}`);
+    console.log(`[goat] ${words.length} words${script ? " from the script" : ""} -> ${transcript}` +
+      (look.TALKS || voice ? "" : ", for timing visuals only: no captions"));
     console.log("Check the spelling. Fix the text in transcript.json, keep the times:");
     let i = 0;
     for (const g of groupCaptions(words)) {
@@ -72,9 +86,11 @@ async function main() {
 
   if (cmd === "cut") {
     need(main, "prep plan.json");
-    const words = look.TALKS ? parseTranscript(readJson(need(transcript, "transcribe plan.json"))) : [];
+    // a look without captions may have words too, for timing visuals: they never cut its pauses
+    const words = look.TALKS || voice || existsSync(transcript) ? parseTranscript(readJson(need(transcript, "transcribe plan.json"))) : [];
     const before = (await probe(main)).dur;
-    const keeps = plan.cut === false || !words.length ? null
+    // a voice-over file is already finished: its pauses stay
+    const keeps = !look.TALKS || voice || plan.cut === false || !words.length ? null
       : silenceKeeps(words, before, { protect: existsSync(prepFile) ? readJson(prepFile).silent ?? [] : [],
         speech: await speech(main) });
     // same cuts as last time (e.g. only the spelling was fixed): keep cut.mp4, so the cut-out isn't redone
@@ -101,18 +117,19 @@ async function main() {
 
   // render
   need(cut, "cut plan.json");
-  if (newer(main, cut) || (look.TALKS && newer(transcript, wordsFile)))
+  if (newer(main, cut) || newer(transcript, wordsFile))
     throw new Error('the video or transcript.json changed after the last cut. Run "cut plan.json" again.');
+  plan.voice = voice; // for the look's validate and its stage
   look.validate(plan);
   const t0 = Date.now();
   const dur = (await probe(cut)).dur;
   const words = readJson(need(wordsFile, "cut plan.json"));
-  const captions = look.TALKS && plan.captions !== false ? groupCaptions(words) : [];
+  const captions = (look.TALKS || voice) && plan.captions !== false ? groupCaptions(words) : [];
   const hfDir = join(work, "hf");
   mkdirSync(hfDir, { recursive: true });
   const cuts = existsSync(cutsFile) ? readJson(cutsFile) : [];
   const clips = existsSync(prepFile) ? (readJson(prepFile).clips ?? []).map((c, i) => ({ ...c, start: cuts[i] ?? c.start })) : [];
-  const ctx = { plan, planDir, work, hfDir, skillDir: SKILL_DIR, dur, words, captions, cuts, clips, run, hf };
+  const ctx = { plan, planDir, work, hfDir, skillDir: SKILL_DIR, dur, words, captions, cuts, clips, voice, run, hf };
   const data = await look.prepare(ctx);
   await buildProject(ctx, data);
 
@@ -122,7 +139,7 @@ async function main() {
   const events = cfg === false ? [] : [...(cfg.auto === false ? [] : look.sfx(plan, ctx)), ...(cfg.add ?? [])];
   checkEvents(events);
   const sound = join(work, "sound.wav");
-  await mixSound({ bed: cut, total: dur, voiceover: plan.voiceover, music: plan.music, events,
+  await mixSound({ bed: cut, total: dur, voiceover: plan.voiceover, voice, music: plan.music, events,
     gain: Number(cfg.volume ?? 1), sfxDir: join(SCRIPTS, "sfx"), out: sound, planDir });
 
   const out = resolve(planDir, plan.output ?? `output/${look.NAME}.mp4`);

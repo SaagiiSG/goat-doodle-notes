@@ -11,12 +11,13 @@
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
       };
     },
-    // Largest font size (px) from maxSize down to minSize at which el's text fits maxWidth on one line.
+    // Largest font size (px) from maxSize down to minSize at which el's text fits maxWidth on one line. scrollWidth is
+    // whole pixels (at least the box's own width, rounded), so a fractional maxWidth is taken up to the whole pixel.
     fit(el, maxWidth, maxSize, minSize = 24) {
       let size = maxSize;
       el.style.whiteSpace = "nowrap";
       el.style.fontSize = size + "px";
-      while (size > minSize && el.scrollWidth > maxWidth) el.style.fontSize = --size + "px";
+      while (size > minSize && el.scrollWidth > Math.ceil(maxWidth)) el.style.fontSize = --size + "px";
       return size;
     },
     // Keep a time only if it is at least minGap after the last kept one.

@@ -24,8 +24,11 @@ export async function loudness(path) {
   return { lufs: num(/I:\s+(-?[\d.]+) LUFS/g), peak: num(/Peak:\s+(-inf|-?[\d.]+) dBFS/g) };
 }
 
-export async function mixSound({ bed, total, voiceover, music, events = [], gain = 1, sfxDir, out, planDir }) {
+// voice: a voice-only video, whose own sound (bed) is already the voice-over (prep put it there): it isn't added a
+// second time, and the music ducks under the bed instead.
+export async function mixSound({ bed, total, voiceover, voice = false, music, events = [], gain = 1, sfxDir, out, planDir }) {
   const T = total.toFixed(3);
+  if (voice) voiceover = null;
   const args = ["-i", bed], fl = [`[0:a]aresample=48000,aformat=channel_layouts=stereo,apad,atrim=0:${T}[clipsnd]`];
   const mix = [];
   let n = 1;
@@ -44,7 +47,7 @@ export async function mixSound({ bed, total, voiceover, music, events = [], gain
     fl.push("[clipsnd][vokey1]sidechaincompress=threshold=0.02:ratio=12:attack=15:release=400[clipduck]");
     mix.push("[vo]", "[clipduck]");
   } else {
-    fl.push("[clipsnd]anull[clipduck]");
+    fl.push(voice && music ? "[clipsnd]asplit=2[clipduck][vokey2]" : "[clipsnd]anull[clipduck]");
     mix.push("[clipduck]");
   }
   if (music) {
@@ -54,7 +57,7 @@ export async function mixSound({ bed, total, voiceover, music, events = [], gain
     args.push("-stream_loop", "-1", "-i", mp);
     fl.push(`[${n++}:a]aresample=48000,aformat=channel_layouts=stereo,volume=${Number(m.volume ?? 0.25)},` +
       `atrim=0:${T},afade=t=out:st=${Math.max(0, total - 1).toFixed(3)}:d=1[mus]`);
-    if (voiceover) {
+    if (voiceover || voice) {
       fl.push("[mus][vokey2]sidechaincompress=threshold=0.02:ratio=6:attack=20:release=500[musduck]");
       mix.push("[musduck]");
     } else mix.push("[mus]");

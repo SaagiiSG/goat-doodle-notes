@@ -18,7 +18,8 @@ const MODEL = {
   sha256: "07c308cf0fc7e6e8b2065a12ed7fc07e1de8febb7dc7839d7b7f15dd66584df9",
   file: "modnet-fa2fa54.onnx",
 };
-const MW = 512, MH = 896, P = MW * MH; // MODNet's size: at 768x1344 it shows ghost patches of the background
+export const MW = 512, MH = 896; // MODNet's size: at 768x1344 it shows ghost patches of the background
+const P = MW * MH;
 // an 8x8 grey PNG: remove-background on it makes HyperFrames install onnxruntime-node the way it always does
 const PIXEL = "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAACXBIWXMAAAABAAAAAQBPJcTWAAAAFElEQVR4nGOsq6tjwAZYsIoOWgkAMOsBmCeKfNQAAAAASUVORK5CYII=";
 const hfCache = () =>
@@ -146,13 +147,16 @@ function oneFrameDelay(p, c, n) {
   return out;
 }
 
+const openSession = async (ort) =>
+  ort.InferenceSession.create(await modelFile(), { executionProviders: ["cpu"], graphOptimizationLevel: "all" });
+
 // Write the cut-out of cut.mp4 (1080x1920, 30 fps) to out: VP9 with alpha, the same file remove-background makes.
 // ffmpeg shrinks each frame to MODNet's size, the matte comes back, and ffmpeg scales it up and alphamerges it onto
 // cut.mp4's own pixels (no RGB round trip). Throws on any failure; cutout.mjs then uses HyperFrames' cut-out.
 // `ort` and `session` can be passed in (tests use a fake session); otherwise HyperFrames' runtime and the pinned model.
 export async function modnetCutOut(cut, out, { hf, ort, session }) {
   ort ??= await loadOrt(hf);
-  session ??= await ort.InferenceSession.create(await modelFile(), { executionProviders: ["cpu"], graphOptimizationLevel: "all" });
+  session ??= await openSession(ort);
   const dec = ffmpeg(["-i", cut, "-vf", `scale=${MW}:${MH}:flags=bicubic`, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], ["ignore", "pipe", "pipe"]);
   const enc = ffmpeg(["-y", "-i", cut, "-f", "rawvideo", "-pix_fmt", "gray", "-s", `${MW}x${MH}`, "-r", String(FPS), "-i", "-",
     "-filter_complex", `[1]scale=${W}:${H}:flags=bicubic[a];[0:v][a]alphamerge,format=yuva420p`,
@@ -171,6 +175,16 @@ export async function modnetCutOut(cut, out, { hf, ort, session }) {
   } finally {
     await session.release();
   }
+}
+
+// MODNet on stills, for heads in looks without a cut-out (headsAt in cutout.mjs): one rgb24 frame at MW x MH in, its
+// gray matte out (islands dropped). `ort` and `session` as in modnetCutOut; matte.release() releases the session.
+export async function stillMatte(hf, { ort, session } = {}) {
+  ort ??= await loadOrt(hf);
+  session ??= await openSession(ort);
+  const matte = async (rgb) => (await mattes([rgb], ort, session).next()).value;
+  matte.release = () => session.release();
+  return matte;
 }
 
 // rgb24 frames at MODNet's size in, gray mattes (0..255, islands dropped) out

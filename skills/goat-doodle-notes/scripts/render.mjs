@@ -10,7 +10,7 @@ export async function buildProject(ctx, data) {
   mkdirSync(hfDir, { recursive: true });
   cpSync(join(skillDir, "template"), hfDir, { recursive: true });
   if (existsSync(join(skillDir, "fonts"))) cpSync(join(skillDir, "fonts"), join(hfDir, "fonts"), { recursive: true });
-  cpSync(join(dirname(fileURLToPath(import.meta.url)), "goat-lib.js"), join(hfDir, "goat-lib.js"));
+  for (const f of ["goat-lib.js", "goat-visuals.js"]) cpSync(join(dirname(fileURLToPath(import.meta.url)), f), join(hfDir, f));
   cpSync(join(work, "cut.mp4"), join(hfDir, "main.mp4"));
   if (existsSync(join(work, "media"))) cpSync(join(work, "media"), join(hfDir, "media"), { recursive: true });
   // data.html fills {{KEY}} in index.html: HyperFrames finds <video> elements in the page's HTML, not ones look.js
@@ -20,7 +20,8 @@ export async function buildProject(ctx, data) {
   let page = readFileSync(index, "utf8").replaceAll("{{DUR}}", ctx.dur.toFixed(3));
   for (const [key, value] of Object.entries(html)) page = page.replaceAll(`{{${key}}}`, () => value); // no $-patterns
   writeFileSync(index, page);
-  const PLAN = { dur: ctx.dur, captions: ctx.captions, words: ctx.words, cuts: ctx.cuts ?? [], clips: ctx.clips ?? [], look: plan.look ?? {}, texts: plan.texts ?? [], ...rest };
+  const PLAN = { dur: ctx.dur, captions: ctx.captions, words: ctx.words, cuts: ctx.cuts ?? [], clips: ctx.clips ?? [],
+    voice: !!ctx.voice, look: plan.look ?? {}, texts: plan.texts ?? [], ...rest };
   writeFileSync(join(hfDir, "plan.js"), `window.PLAN = ${JSON.stringify(PLAN)};\n`);
   return hfDir;
 }
